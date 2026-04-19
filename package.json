@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "vite",
+    "local": "vite --open",
+    "run:local": "vite --open --host localhost",
+    "dev:local-clean": "bash scripts/dev-local.sh",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
