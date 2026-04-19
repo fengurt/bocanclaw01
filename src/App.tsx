@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { Infographic } from './components/Infographic'
 import { computeModel } from './model/calculations'
 import { defaultModelParams, type ModelParams } from './model/types'
+import { exportReportPdf } from './exportPdf'
 import { downloadParamsJson, downloadReportHtml } from './exportReport'
 import './App.css'
 
@@ -65,10 +67,27 @@ function money(value: number) {
 
 export default function App() {
   const [params, setParams] = useState<ModelParams>(defaultModelParams)
+  const [pdfBusy, setPdfBusy] = useState(false)
+  const pdfExportRef = useRef<HTMLDivElement>(null)
   const result = useMemo(() => computeModel(params), [params])
 
   function patchParams(partial: Partial<ModelParams>) {
     setParams((current) => ({ ...current, ...partial }))
+  }
+
+  async function handleExportPdf() {
+    const root = pdfExportRef.current
+    if (!root) {
+      return
+    }
+    setPdfBusy(true)
+    try {
+      await exportReportPdf(root, '财务测算报告')
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setPdfBusy(false)
+    }
   }
 
   return (
@@ -78,7 +97,7 @@ export default function App() {
           <div className="eyebrow">Authentic · Minimal · Inspiring</div>
           <h1 className="title">三方培训业务全链路财务测算</h1>
           <p className="subtitle">
-            白与深海蓝与金 · 移动端优先排版 · 参数即时联动 · 导出同主题 HTML 报告
+            白与深海蓝与金 · 移动端优先 · 信息图概览 · 可导出 HTML / PDF
           </p>
         </div>
         <div className="header-actions">
@@ -86,10 +105,18 @@ export default function App() {
             恢复默认
           </button>
           <button type="button" className="btn secondary" onClick={() => downloadParamsJson(params)}>
-            导出参数 JSON
+            导出 JSON
           </button>
-          <button type="button" className="btn primary" onClick={() => downloadReportHtml(params, result)}>
-            导出 HTML 报告
+          <button type="button" className="btn secondary" onClick={() => downloadReportHtml(params, result)}>
+            导出 HTML
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            disabled={pdfBusy}
+            onClick={() => void handleExportPdf()}
+          >
+            {pdfBusy ? '生成 PDF…' : '导出 PDF'}
           </button>
         </div>
       </header>
@@ -316,6 +343,11 @@ export default function App() {
         </aside>
 
         <main className="main">
+          <div ref={pdfExportRef} className="pdf-export-zone">
+            <div className="pdf-export-meta">
+              <span className="pdf-export-meta-label">测算快照</span>
+              <span className="pdf-export-meta-time">{new Date().toLocaleString('zh-CN')}</span>
+            </div>
           <section className="panel">
             <div className="panel-header">
               <h2>综合汇总（全周期）</h2>
@@ -374,6 +406,8 @@ export default function App() {
               {money(result.mergedProfitBeforeSplit * params.corporateIncomeTaxRate)} 元（仅展示）。
             </div>
           </section>
+
+          <Infographic result={result} params={params} />
 
           <section className="panel">
             <div className="panel-header">
@@ -512,6 +546,7 @@ export default function App() {
               </table>
             </div>
           </section>
+          </div>
 
           <footer className="footer">
             本地：<code>npm install</code> → <code>npm run dev</code>
