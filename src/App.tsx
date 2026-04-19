@@ -75,10 +75,10 @@ export default function App() {
     <div className="app-shell">
       <header className="app-header">
         <div>
-          <div className="eyebrow">Enterprise financial model</div>
+          <div className="eyebrow">Authentic · Minimal · Inspiring</div>
           <h1 className="title">三方培训业务全链路财务测算</h1>
           <p className="subtitle">
-            参数联动测算 · 课程递延与中成前置分成 · 陪跑刚性成本与内部分配 · 本地可部署
+            白与深海蓝与金 · 移动端优先排版 · 参数即时联动 · 导出同主题 HTML 报告
           </p>
         </div>
         <div className="header-actions">
@@ -514,12 +514,12 @@ export default function App() {
           </section>
 
           <footer className="footer">
-            本地运行：<code>npm install</code> → <code>npm run dev</code>
-            ；设计参考{' '}
+            本地：<code>npm install</code> → <code>npm run dev</code>
+            ；配色 White / Deep Blue (#0A1626) / Gold (#A88B52)。灵感参考{' '}
             <a href="https://www.designprompts.dev/" target="_blank" rel="noreferrer">
               designprompts.dev
-            </a>{' '}
-            Enterprise / SaaS 仪表盘风格。
+            </a>
+            。
           </footer>
         </main>
       </div>
