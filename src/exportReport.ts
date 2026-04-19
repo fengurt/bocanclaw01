@@ -84,8 +84,9 @@ export function buildReportHtml(params: ModelParams, result: ConsolidatedResult)
     <tr class="summary"><th>项目</th><th class="num">金额（元）</th></tr>
     <tr><td>合并营业总收入（不含税）</td><td class="num">${formatMoney(result.mergedRevenueExclLifecycle)}</td></tr>
     <tr><td>中成伟业全周期总分成</td><td class="num">${formatMoney(result.mergedZhongchengLifecycle)}</td></tr>
-    <tr><td>合并刚性及执行激励总扣除</td><td class="num">${formatMoney(result.mergedRigidLifecycle)}</td></tr>
+    <tr><td>合并刚性及首期激励总扣除</td><td class="num">${formatMoney(result.mergedRigidLifecycle)}</td></tr>
     <tr><td>合并利润总额（税前）</td><td class="num">${formatMoney(result.mergedProfitBeforeSplit)}</td></tr>
+    <tr><td>产品线利润加总（参考）</td><td class="num">${formatMoney(result.lifecycleLinesProfitSum)}</td></tr>
     <tr><td>博雅问渠书院（${(params.boyaFinalProfitShare * 100).toFixed(0)}%）</td><td class="num">${formatMoney(result.boyaShareOfProfit)}</td></tr>
     <tr><td>岁知社（${(params.suizhiFinalProfitShare * 100).toFixed(0)}%）</td><td class="num">${formatMoney(result.suizhiShareOfProfit)}</td></tr>
     <tr><td>全周期综合毛利率（测算）</td><td class="num">${formatMoney(result.grossMarginLifecycle)}%</td></tr>

@@ -334,12 +334,16 @@ export default function App() {
                 <div className="kpi-value">{money(result.mergedZhongchengLifecycle)}</div>
               </div>
               <div className="kpi">
-                <div className="kpi-label">刚性及激励总扣除</div>
+                <div className="kpi-label">刚性及首期激励总扣除</div>
                 <div className="kpi-value">{money(result.mergedRigidLifecycle)}</div>
               </div>
               <div className="kpi accent">
                 <div className="kpi-label">合并利润总额（税前）</div>
                 <div className="kpi-value">{money(result.mergedProfitBeforeSplit)}</div>
+              </div>
+              <div className="kpi">
+                <div className="kpi-label">产品线利润加总（参考）</div>
+                <div className="kpi-value">{money(result.lifecycleLinesProfitSum)}</div>
               </div>
               <div className="kpi">
                 <div className="kpi-label">博雅分成</div>
@@ -363,8 +367,11 @@ export default function App() {
               </div>
             </div>
             <div className="callout">
-              企业所得税（{roundDisplayPercent(params.corporateIncomeTaxRate)}%）若按年度利润全额计提，约为{' '}
-              {money(result.mergedProfitBeforeSplit * params.corporateIncomeTaxRate)} 元（未扣除纳税调整项，仅展示）。
+              合并利润采用「全周期营收 − 中成全周期分成 −（课程全周期刚性 + 陪跑首期刚性 + 陪跑首期团队激励池）」。
+              「产品线利润加总」= 课程全周期利润 + 陪跑全周期利润；其中陪跑全周期利润已按文档口径扣减首期硬件/转介绍/附加税及 15%
+              中成前置分成，但不扣减首期 40/30/30 激励池，因此通常高于合并利润总额。
+              企业所得税（{roundDisplayPercent(params.corporateIncomeTaxRate)}%）若按合并利润总额计提，约为{' '}
+              {money(result.mergedProfitBeforeSplit * params.corporateIncomeTaxRate)} 元（仅展示）。
             </div>
           </section>
 

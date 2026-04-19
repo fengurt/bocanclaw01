@@ -114,8 +114,12 @@ export type ConsolidatedResult = {
   coachingRevenueExclCurrentTotal: number
   coachingZhongchengLifecycle: number
   coachingRigidLifecycle: number
-  coachingInternalTotalLifecycle: number
+  /** 陪跑首期团队激励池（内部分配基数合计） */
+  coachingInternalPeriodTotal: number
   coachingProfitLifecycle: number
+
+  /** 产品线全周期利润加总（陪跑全周期利润未扣首期激励池） */
+  lifecycleLinesProfitSum: number
 
   /** 全周期合并（课程+陪跑） */
   mergedRevenueExclLifecycle: number
@@ -323,7 +327,8 @@ export function computeModel(params: ModelParams): ConsolidatedResult {
     }
   })
 
-  const coachingLifecycle: CoachingLifecycleResult[] = coachingSlices.map((slice) => {
+  const coachingLifecycle: CoachingLifecycleResult[] = coachingSlices.map((slice, sliceIndex) => {
+    const periodRow = coachingPeriod[sliceIndex]!
     const revenueExclFullPerStore = revenueExclFromTaxIncl(slice.priceTaxInclPerStore, params.vatRate)
     const revenueExclLifecyclePerStore = revenueExclFullPerStore
     const revenueExclLifecycleTotal = round2(revenueExclLifecyclePerStore * slice.storeCount)
@@ -332,22 +337,16 @@ export function computeModel(params: ModelParams): ConsolidatedResult {
     )
 
     const hardwareTotal = round2(params.hardwareCostPerStoreTaxIncl * slice.storeCount)
-    const referralAccrualTotal = round2(revenueExclLifecycleTotal * params.referralAccrualRate)
+    const referralAccrualTotal = round2(periodRow.revenueExclCurrentTotal * params.referralAccrualRate)
     const surchargeLifecycle = surchargeFromRevenueExcl(
-      revenueExclLifecycleTotal,
+      periodRow.revenueExclCurrentTotal,
       params.vatRate,
       params.surchargeOnVatRate,
     )
     const rigidLifecycle = round2(hardwareTotal + referralAccrualTotal + surchargeLifecycle)
 
-    const internalPoolLifecycle = round2(revenueExclLifecycleTotal - zhongchengPrefShareLifecycle - rigidLifecycle)
-    const internalTotalLifecycle = round2(
-      internalPoolLifecycle * (params.coachingInternalSalesShare +
-        params.coachingInternalAcquisitionShare +
-        params.coachingInternalDeliveryShare),
-    )
     const profitLifecycle = round2(
-      revenueExclLifecycleTotal - zhongchengPrefShareLifecycle - rigidLifecycle - internalTotalLifecycle,
+      revenueExclLifecycleTotal - zhongchengPrefShareLifecycle - rigidLifecycle,
     )
 
     return {
@@ -382,13 +381,8 @@ export function computeModel(params: ModelParams): ConsolidatedResult {
   const coachingRigidLifecycle = round2(
     coachingLifecycle.reduce((sum, row) => sum + row.rigidLifecycle, 0),
   )
-  const coachingInternalTotalLifecycle = round2(
-    coachingLifecycle.reduce((sum, row) => {
-      const internalPool = round2(
-        row.revenueExclLifecycleTotal - row.zhongchengPrefShareLifecycle - row.rigidLifecycle,
-      )
-      return sum + internalPool
-    }, 0),
+  const coachingInternalPeriodTotal = round2(
+    coachingPeriod.reduce((sum, row) => sum + row.internalPool, 0),
   )
   const coachingProfitLifecycle = round2(
     coachingLifecycle.reduce((sum, row) => sum + row.profitLifecycle, 0),
@@ -406,7 +400,14 @@ export function computeModel(params: ModelParams): ConsolidatedResult {
   const courseRigidLifecycle = round2(
     courseLifecycle.reduce((sum, row) => sum + row.rigidCostLifecycle, 0),
   )
-  const mergedRigidLifecycle = round2(courseRigidLifecycle + coachingRigidLifecycle + coachingInternalTotalLifecycle)
+  const coachingRigidPeriodTotal = round2(
+    coachingPeriod.reduce((sum, row) => sum + row.rigidTotal, 0),
+  )
+  const mergedRigidLifecycle = round2(
+    courseRigidLifecycle + coachingRigidPeriodTotal + coachingInternalPeriodTotal,
+  )
+
+  const lifecycleLinesProfitSum = round2(courseMergedProfitLifecycle + coachingProfitLifecycle)
 
   const mergedProfitBeforeSplit = round2(mergedRevenueExclLifecycle - mergedZhongchengLifecycle - mergedRigidLifecycle)
 
@@ -440,8 +441,9 @@ export function computeModel(params: ModelParams): ConsolidatedResult {
     coachingRevenueExclCurrentTotal,
     coachingZhongchengLifecycle,
     coachingRigidLifecycle,
-    coachingInternalTotalLifecycle,
+    coachingInternalPeriodTotal,
     coachingProfitLifecycle,
+    lifecycleLinesProfitSum,
     mergedRevenueExclLifecycle,
     mergedZhongchengLifecycle,
     mergedRigidLifecycle,
